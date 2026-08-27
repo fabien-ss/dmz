@@ -1,0 +1,34 @@
+Autoriser HTTP, HTTPS, SSH vers la DMZ (depuis WAN et LAN)
+# Politique par defaut (necessaire pour que la regle ait un sens :
+# sans ca, tout passe deja par defaut avec ACCEPT)
+iptables -P FORWARD DROP
+
+# Connexions deja etablies (indispensable, sinon meme le trafic de retour
+# des connexions autorisees serait bloque par la policy DROP ci-dessus)
+iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# --- Autoriser HTTP (80), HTTPS (443), SSH (22) depuis le WAN vers la DMZ ---
+iptables -A FORWARD -i "$WAN_IF" -o "$DMZ_IF" -d "$DMZ_WEB_IP" \
+    -p tcp -m multiport --dports 80,443,22 -j ACCEPT
+
+# --- Autoriser HTTP (80), HTTPS (443), SSH (22) depuis le LAN vers la DMZ ---
+iptables -A FORWARD -i "$LAN_IF" -o "$DMZ_IF" -d "$DMZ_WEB_IP" \
+    -p tcp -m multiport --dports 80,443,22 -j ACCEPT
+
+Bloquer tout autre port ou protocole par défaut
+
+Bloquer l’accès du WAN vers le LAN
+
+Autoriser le LAN à sortir vers l’extérieur via NAT
+
+Bloquer les sites pornographiques (SquidGuard ou autre blacklist)
+
+Bloquer l’accès à Facebook et YouTube pendant les heures de travail (8h–12h, 14h–18h)
+
+Limiter la bande passante à 500 Ko/s par machine LAN
+
+# Politique par défaut : tout bloquer
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT
+
